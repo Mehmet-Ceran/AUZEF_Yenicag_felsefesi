@@ -1,0 +1,1139 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    .soru { font-weight: bold; margin-bottom: 10px; }
+    .secenekler button {
+      display: block;
+      margin: 10px 0;
+      padding: 12px;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      cursor: pointer;
+    }
+    .secenekler button:hover { background-color: #e0e0e0; }
+    #navigasyon { margin-top: 20px; }
+    #sonuc { margin-top: 20px; font-size: 1.2em; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<h1>Test</h1>
+
+<div id="test">
+  <div class="soru" id="soru-metin"></div>
+  <div class="secenekler" id="secenekler"></div>
+  <div id="geri-bildirim" style="margin-top:10px; font-weight:bold;"></div>
+</div>
+
+<div id="navigasyon">
+  <label for="soru-sec">Soruyu Seç:</label>
+  <select id="soru-sec"></select>
+  <button onclick="cevapla()">Cevapla</button>
+  <button onclick="sonrakiSoru()">Sonraki Soru</button>
+  <button onclick="testiBitir()">Testi Bitir</button>
+</div>
+
+<div id="sonuc"></div>
+<div id="bastan" style="display:none; margin-top:10px;">
+  <button onclick="bastanBasla()">Baştan Başla</button>
+</div>
+
+<script>
+const sorular = [
+  {
+    "soru": "﻿\"Berkeley'e göre sonlu ruhlardaki ideleri meydana getiren sonsuz ruh ......\" Yukarıdaki cümlede boş bırakılan yere aşağıdakilerden hangisi getirilmelidir?",
+    "secenekler": [
+      "A) İnsan zihnidir.",
+      "B) İdealardır.",
+      "C) Doğadır.",
+      "D) Tanrıdır.",
+      "E) Kendinde şeydir."
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Spinoza'ya göre maddi nesneler yani cisimler, Tanrının hangi niteliği altında bulunurlar?",
+    "secenekler": [
+      "A) Sonsuzluk",
+      "B) Yer kaplama",
+      "C) Zorunluluk",
+      "D) Ezelîlik-Ebedîlik",
+      "E) Düşünce"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Aşağıdakilerden hangisi Spinoza'nın yöntem anlayışını doğru şekilde ifade eder?",
+    "secenekler": [
+      "A) Antropomorfik yöntem",
+      "B) Analojik yöntem",
+      "C) Empirik yöntem",
+      "D) Totolojik yöntem",
+      "E) Geometrik yöntem"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Spinoza'ya göre fikirler, Tanrının hangi niteliği altında bulunurlar?",
+    "secenekler": [
+      "A) Yer kaplama",
+      "B) Ezelîlik-Ebedîlik",
+      "C) Düşünce",
+      "D) Sonsuzluk",
+      "E) Zorunluluk"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Leibniz'e göre fiziğin ve metafiziğin temel ilkesi aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Güç",
+      "B) Zorunluluk",
+      "C) Yer kaplama",
+      "D) Düşünce",
+      "E) Madde"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A \"Locke'a göre akıl, bilgi edinmek için gereken malzemeyi ........ yoluyla alır.\" Yukarıdaki cümlede boş bırakılan yere aşağıdakilerden hangisi getirilmelidir?",
+    "secenekler": [
+      "A) geist",
+      "B) sezgi",
+      "C) deneyim",
+      "D) doğuştan ideler",
+      "E) dedüksiyon"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Kant'ın, \"beni dogmatik uyuklamamdan uyandırdı.\" sözüyle andığı Yeni Çağ filozofu  aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Descartes",
+      "B) Berkeley",
+      "C) Spinoza",
+      "D) Leibniz",
+      "E) Hume"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Aşağıdakilerden hangisi John Locke'un eserlerinden biridir?",
+    "secenekler": [
+      "A) İnsanın Anlama Yetisi Üzerine Bir Deneme",
+      "B) Anlama Yetisinin İyileştirilmesi Üzerine",
+      "C) Metot Üzerine Konuşma",
+      "D) Ethica",
+      "E) Bilimler ve Sanatlar Üzerine Söylev"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Aşağıdakilerden hangisi, Leibniz'in monadlarının özelliklerinden biri değildir?",
+    "secenekler": [
+      "A) Bölünemezler",
+      "B) Maddidirler",
+      "C) Ezelî ve ebedîdirler",
+      "D) Şekil ve büyüklüğe sahip değildirler",
+      "E) Yok edilemezler"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B \"Hume algıları ..... ve ....... olmak üzere ikiye ayırır.\" Yukarıdaki cümlede boş bırakılan yerlere sırasıyla aşağıdakilerden hangisi getirilmelidir?",
+    "secenekler": [
+      "A) Doğuştan ideler - Edinilmiş ideler",
+      "B) Duyumlar - İzlenimler",
+      "C) Basit algılar - Karmaşık algılar",
+      "D) Birincil ideler - İkincil ideler",
+      "E) İzlenimler - İdeler"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E \"Berkeley'e göre bir şeyin var olması demek, onun ......... demektir.\" Yukarıdaki cümlede boş bırakılan yere aşağıdakilerden hangisi getirilmelidir?",
+    "secenekler": [
+      "A) İrade sahibi olması",
+      "B) Yer kaplaması",
+      "C) Maddi olması",
+      "D) Algılanması",
+      "E) Hatırlanması"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Descartes'a göre bilginin kesinliği ve doğruluğu, aşağıdakilerden hangisinin bilgisine dayanır?",
+    "secenekler": [
+      "A) Tanrının bilgisi",
+      "B) Duyusal bilgi",
+      "C) Ahlaki bilgi",
+      "D) Felsefi bilgi",
+      "E) Fizik bilgisi"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Aşağıdakilerden hangisi George Berkeley'in eserlerinden biridir?",
+    "secenekler": [
+      "A) İnsan Bilgisinin İlkeleri Üzerine Bir İnceleme",
+      "B) Bilimler ve Sanatlar Üzerine Söylev",
+      "C) Ethica",
+      "D) Metot Üzerine Konuşma",
+      "E) Anlama Yetisinin İyileştirilmesi Üzerine"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Locke'a göre insan zihnini hayvan zihninden ayıran özellik aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Sezgi yetisi",
+      "B) Çağrışım yetisi",
+      "C) Duyumsama yetisi",
+      "D) Soyutlama yetisi",
+      "E) Bellek"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Spinoza'nın felsefesinin en temel kaygısı aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) En yüce ahlaki ilkelere ulaşmak",
+      "B) İnsanları doğaya egemen kılmak",
+      "C) En yüksek estetik değerlere ulaşmak",
+      "D) En yüksek mutluluğa ulaşmak",
+      "E) En yüksek hazza erişmek"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Descartes felsefeyi kesin bir bilim konumuna getirmek için felsefi yöntemin aşağıdaki  disiplinlerden hangisine dayanması gerektiğini savunmuştur?",
+    "secenekler": [
+      "A) Matematik",
+      "B) Etik",
+      "C) Mekanik",
+      "D) Totoloji",
+      "E) Teoloji"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Doğadaki her şeyin varlığını sürdürmek için zorunlu olarak çabaladığını savunan ve bu  düşüncesini \"conatus\" kavramıyla ortaya koyan Yeni Çağ filozofu aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Leibniz",
+      "B) Descartes",
+      "C) Hume",
+      "D) Locke",
+      "E) Spinoza"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Descartes'ın felsefesinin merkezinde bulunan önerme aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Varlığımdan kuşku duyuyorum.",
+      "B) Düşünüyorum, o hâlde varım.",
+      "C) Duyumsuyorum, o hâlde varım.",
+      "D) Varım, çünkü kuşku duyuyorum.",
+      "E) Biliyorum, o hâlde varım."
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Aşağıdakilerden hangisi Spinoza'nın eserlerinden biri değildir?",
+    "secenekler": [
+      "A) Ethica",
+      "B) Teolojik-Politik İnceleme",
+      "C) Politik İnceleme",
+      "D) Anlama Yetisinin İyileştirilmesi Üzerine",
+      "E) Bilimler ve Sanatlar Üzerine Söylev"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Kant'ın transendental analitiğine göre aşağıdakilerden hangisi kavramların belirleyici dört temel  özelliğinden biri değildir?",
+    "secenekler": [
+      "A) Kavramlar her zaman için empirik içeriğe sahip olmalıdır.",
+      "B) Kavramlar tablomuz tam olmalı ve saf anlama yetisinin tüm alanını kapsamalıdır.",
+      "C) Kavramlar empirik değil saf olmalıdır.",
+      "D) Kavramlar temeldir ve türetilmiş ya da bileşik olanlardan dikkatli bir biçimde ayırt edilmelidir.",
+      "E) Kavramlar sezgi ve duyarlılığa değil, düşünceye ve anlama yetisine ait olmalıdır."
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Monadlar öğretisi aşağıdaki Yeni Çağ filozoflarından hangisine aittir?",
+    "secenekler": [
+      "A) Spinoza",
+      "B) Leibniz",
+      "C) Berkeley",
+      "D) Descartes",
+      "E) Locke"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Aşağıdakilerden hangisi Kant'ın diyalektiği \"yanılsamanın\" mantığı olarak nitelendirmesinin  sebeplerinden biridir?",
+    "secenekler": [
+      "A) Diyalektik söz konusu olduğunda aklın, duyulur alanın sınırını aşarak daima şartsız olana  ulaşmaya çabalaması",
+      "B) Diyalektiğin bilimlerin gelişmesine hiçbir katkıda bulunmaması",
+      "C) Diyalektiğin deney ve gözleme dayanmaması",
+      "D) Diyalektiğin sofistler tarafından kullanılan bir yöntem olması",
+      "E) Diyalektiğin matematiksel ilkeleri göz ardı etmesi"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Kant'a göre güzel, aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) İdealardan pay alandır.",
+      "B) Taklidi mümkün olmayandır.",
+      "C) Apriori bir kavramdır.",
+      "D) Altın orandır.",
+      "E) Kavramsız bir şekilde genel olarak hoşa giden şeydir"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Kant'ın \"kayıtsız şartsız iyi\" olarak kabul ettiği tek şey aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) İyi isteme (İyi irade)",
+      "B) Haz",
+      "C) Onur",
+      "D) Sağlık",
+      "E) Mutluluk"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Tanrı ile doğayı özdeş kabul eden ve bunu \"Deus sive Natura\" kavramı ile ifade eden Yeni Çağ filozofu aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Locke",
+      "B) Berkeley",
+      "C) Descartes",
+      "D) Leibniz",
+      "E) Spinoza"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Düşünce ve yer kaplamanın birer töz değil var olan tek tözün iki temel niteliği olduğunu savunan  Yeni Çağ filozofu aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Descartes",
+      "B) Leibniz",
+      "C) Berkeley",
+      "D) Hume",
+      "E) Spinoza"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Kant'ın yargılara ilişkin yaptığı ikili ayrım aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Fiziğin yargıları-Matematiğin yargıları",
+      "B) Dinî yargılar-Ahlaki yargılar",
+      "C) Fiziğin yargıları-Metafiziğin yargıları",
+      "D) Analitik yargılar-Sentetik yargılar",
+      "E) Ahlaki yargılar-Hukuki yargılar"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Aşağıdakilerden hangisi Kant'ın ahlak anlayışını uygun bir şekilde nitelemektedir?",
+    "secenekler": [
+      "A) Haz ahlakı",
+      "B) Nihilizm",
+      "C) Oportunizm",
+      "D) Ödev ahlakı",
+      "E) Yararcı ahlak"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Kant'a göre bilgimizi arttıran ve genişleten yargılar hangileridir?",
+    "secenekler": [
+      "A) Ahlaki yargılar",
+      "B) Analitik yargılar",
+      "C) Totolojik yargılar",
+      "D) Sentetik yargılar",
+      "E) Dinî yargılar"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Aşağıdaki Yeni Çağ filozoflarından hangisi İngiltere'de ortaya çıkan empirisist felsefe geleneğinin  önde gelen temsilcilerinden biridir?",
+    "secenekler": [
+      "A) Locke",
+      "B) Spinoza",
+      "C) Descartes",
+      "D) Leibniz",
+      "E) Kant"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Kant'a göre bir şeyin güzel olduğunu bildiren yargıya ne ad verilmektedir?",
+    "secenekler": [
+      "A) Ahlaki yargı",
+      "B) Beğeni yargısı",
+      "C) Analitik yargı",
+      "D) Apriori yargı",
+      "E) Sentetik yargı"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Duyarlığın apriori öge ve ilkelerinin araştırılması işine Kant'ın verdiği isim aşağıdakilerden  hangisidir?",
+    "secenekler": [
+      "A) Transendental diyalektik",
+      "B) Transendental matematik",
+      "C) Transendental fizik",
+      "D) Transendental estetik",
+      "E) Transendental analitik"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Aşağıdaki Yeni Çağ filozoflarından hangisi solipsist bir felsefi anlayışa sahiptir?",
+    "secenekler": [
+      "A) Spinoza",
+      "B) Berkeley",
+      "C) Leibniz",
+      "D) Hume",
+      "E) Descartes"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Aşağıdakilerden hangisi Kant'ın eserlerinden biri değildir?",
+    "secenekler": [
+      "A) Pratik Aklın Eleştirisi",
+      "B) Yargı Gücünün Eleştirisi",
+      "C) Saf Aklın Eleştirisi",
+      "D) Ahlak Metafiziğinin Temellendirilmesi",
+      "E) Metot Üzerine Konuşma"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Kant'ın transendental estetik öğretisinin konusu aşağıdakilerden hangisi ile sınırlıdır?",
+    "secenekler": [
+      "A) Fizik",
+      "B) Uzay ve zaman",
+      "C) Geometri",
+      "D) Sanat",
+      "E) Ahlak"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Kant, eleştiri öncesi olarak anılan döneminde, aşağıdaki geleneklerden hangisine bağlı kalmıştır?",
+    "secenekler": [
+      "A) Ortaçağ-Skolastik geleneği",
+      "B) Rönesans geleneği",
+      "C) Leibniz-Wolff geleneği",
+      "D) Materyalist gelenek",
+      "E) Antik Yunan geleneği"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Kant'ın genel olarak anlama yetisinin kurallarına ilişkin bilime verdiği isim aşağıdakilerden  hangisidir?",
+    "secenekler": [
+      "A) Etoloji",
+      "B) Matematik",
+      "C) Mantık",
+      "D) Ontoloji",
+      "E) Epistemoloji"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Aşağıdakilerden hangisi David Hume'un eserlerinden biridir?",
+    "secenekler": [
+      "A) Metot Üzerine Konuşma",
+      "B) Anlama Yetisinin İyileştirilmesi Üzerine",
+      "C) İnsan Doğası Üzerine Bir İnceleme",
+      "D) Ethica",
+      "E) Bilimler ve Sanatlar Üzerine Söylev"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Genel (formel) mantık, düşüncenin içeriğine değil ..... yöneliktir. Yukarıdaki cümlede boş bırakılan yere aşağıdakilerden hangisi getirilmelidir?",
+    "secenekler": [
+      "A) zorunluluğuna",
+      "B) kesinliğine",
+      "C) formuna",
+      "D) niceliğine",
+      "E) niteliğine"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Kant'ın transandantal estetikte ele aldığı saf sezgiler aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Akıl ve vicdan",
+      "B) Zaman ve süre",
+      "C) Uzay ve zaman",
+      "D) Akıl ve zihin",
+      "E) Uzay ve mekân"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Leibniz'e göre madde neden töz olamaz?",
+    "secenekler": [
+      "A) Hâlleri olduğu için",
+      "B) Belirsiz bir ilke olduğu için",
+      "C) Var olmadığı için",
+      "D) Çok olduğu için",
+      "E) Parçaları olduğu ve bölünebildiği için"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Kant'a göre mantık ne zamandan beri hiç ilerleme kaydedememiştir?",
+    "secenekler": [
+      "A) Descartes'ten Spinoza'ya kadar",
+      "B) Hume'dan kendisine kadar",
+      "C) Parmenides'ten kendisine kadar",
+      "D) Port Royal mantıkçılarından kendisine kadar",
+      "E) Aristoteles'ten kendisine kadar"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Hume ideleri nasıl tanımlar?",
+    "secenekler": [
+      "A) Canlı algılar olarak",
+      "B) Sezgilerimiz olarak",
+      "C) İzlenimlerin soluk kopyaları olarak",
+      "D) Anlamsız sesler olarak",
+      "E) Apriori kavramlar olarak"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Kant'a göre uzayla ilgili aşağıdakilerden hangisi tasarlanamaz?",
+    "secenekler": [
+      "A) Görü olduğu",
+      "B) Var olmadığı",
+      "C) İçinde nesneler olduğu",
+      "D) Üç boyutlu olduğu",
+      "E) Nesnelerindeki değişimler"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Aşağıdakilerden hangisi Spinoza felsefesine ait bir kavram değildir?",
+    "secenekler": [
+      "A) Modus",
+      "B) Attributum",
+      "C) Conatus",
+      "D) Anschauung",
+      "E) Substantia"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Locke'un idelere ilişkin yaptığı ikili ayrım aşağıdaki seçeneklerin hangisinde doğru olarak  verilmiştir?",
+    "secenekler": [
+      "A) Doğuştan ideler - Sonradan edinilen ideler",
+      "B) Basit ideler - Karmaşık ideler",
+      "C) Saf ideler - Empirik ideler",
+      "D) Birincil ideler - İkincil ideler",
+      "E) Birincil ideler - Karmaşık ideler"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Kant'ın beğeni yargılarına ilişkin görüşleri bağlamında aşağıdakilerden hangisi söylenemez?",
+    "secenekler": [
+      "A) Beğeni yargıları duygu ifade eden önermelerdir.",
+      "B) Beğeni yargıları nesnel bilgi verir.",
+      "C) Beğeni yargıları güzel olana ilişkin yargılardır.",
+      "D) Beğeni yargıları öznel bir temel üzerine kuruludur.",
+      "E) Beğeni yargıları kavramsal bilgi vermez."
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Spinoza'ya göre tüm duygularımızın kendisinden türediği iki temel duygu aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Öfke ve nefret",
+      "B) Gurur ve haz",
+      "C) Sevinç ve keder",
+      "D) Öfke ve heyecan",
+      "E) Gurur ve ön yargı"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Kendi felsefesini Kopernik'in astronomide yaptığı devrime benzeten filozof kimdir?",
+    "secenekler": [
+      "A) Locke",
+      "B) Malebranche",
+      "C) Diderot",
+      "D) Descartes",
+      "E) Kant"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Kant'a göre genel (formel) mantık ile matematik arasındaki temel fark aşağıdakilerden  hangisidir?",
+    "secenekler": [
+      "A) Mantığın matematikten daha kesin bir bilim olması",
+      "B) Matematiğin zorunlu mantığın ise zorunsuz bilgiler sağlaması",
+      "C) Matematiğin mantıktan daha kesin bir bilim olması",
+      "D) Mantık tamamlanmış bir bilimken matematiğin gelişmekte olan bir bilim olması",
+      "E) Matematiğin mantıktan daha kolay kavranabilir olması"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Kant'a göre geleneksel metafiziğin \"ruh\" idesi ile ilgilenen alanı aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Ahlak",
+      "B) Rasyonel kozmoloji",
+      "C) Estetik",
+      "D) Rasyonel teoloji",
+      "E) Rasyonel psikoloji"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Aşağıdakilerden hangisi Kant'a göre geometrik önermeler için doğrudur?",
+    "secenekler": [
+      "A) Gözleme dayalı önermelerdir.",
+      "B) Apriori ve zorunlu önermelerdir.",
+      "C) Tümevarımsal önermelerdir.",
+      "D) Zorunsuz önermelerdir.",
+      "E) Aposteriori önermelerdir."
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Kant'a göre güzel karşısındaki durumumuz aşağıdakilerden hangisidir?",
+    "secenekler": [
+      "A) Salt bir seyir durumudur.",
+      "B) İlgisiz bir tavır takınmadır.",
+      "C) Fayda arayan bir durumdur.",
+      "D) Dionysosvari bir tutumdur.",
+      "E) Rüyada olmaya benzer bir durumdur."
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Immaunel Kant'ın Son Günleri adlı eserin yazarı kimdir?",
+    "secenekler": [
+      "A) Thomas De Qincy",
+      "B) Thomas Hobbes",
+      "C) Locke",
+      "D) Bernard Shaw",
+      "E) William Hamilton"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Aşağıdakilerden hangisi Kant'ın koşulsuz (kategorik) buyruk ismini verdiği ilkelerin bir özelliği  değildir?",
+    "secenekler": [
+      "A) Apriori olmak",
+      "B) Evrensel olmak",
+      "C) Zorunlu olmak",
+      "D) Kişiden kişiye değişiklik göstermek",
+      "E) Formel olmak"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Maddenin gerçekte var olduğunu reddeden filozof kimdir?",
+    "secenekler": [
+      "A) Berkeley",
+      "B) Descartes",
+      "C) Baron D'Holbach",
+      "D) Spinoza",
+      "E) Diderot"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Kant'ın bilgi sorunu temelinde oluşturduğu felsefe aşağıdakilerden hangisine karşılık  gelmektedir?",
+    "secenekler": [
+      "A) Emprisist felsefe",
+      "B) Skolastik felsefe",
+      "C) Transandantal ögeler öğretisi",
+      "D) Varlık felsefesi",
+      "E) Rasyonel felsefe"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Kant'ın ahlak yasasına ilişkin formülasyonu aşağıdaki ifadelerden hangisidir?",
+    "secenekler": [
+      "A) \"Öyle eylemde bulun ki eyleminin ardında yatan maksim, herkes için geçerli evrensel bir yasa  olsun.\"",
+      "B) \"Öyle eylemde bulun ki eyleminin ardında yatan maksim, senin güdü ve eğilimlerine uygun  olsun.\"",
+      "C) \"Öyle eylemde bulun ki eylemin herkesi mutlu etsin.\"",
+      "D) \"Öyle eylemde bulun ki eylemin belirli bir amaca yönelik olsun.\"",
+      "E) \"Öyle eylemde bulun ki eylemin seni mutlu etsin.\""
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Eleştirel felsefenin kurucusu kimdir?",
+    "secenekler": [
+      "A) Leibniz",
+      "B) Spinoza",
+      "C) Berkeley",
+      "D) Kant",
+      "E) Malebranche"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D \"Hume'un empirisist anlayışına göre bütün bilgiler ..................... türetilirler.\" Yukarıdaki cümlede yer alan boşluğa aşağıdaki şıklardan hangisinin gelmesi uygun olur?",
+    "secenekler": [
+      "a) sezgiden",
+      "b) doğa yasalarından",
+      "c) algılardan",
+      "d) kavramlardan",
+      "e) doğuştan gelen idelerden"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "D Aşağıdaki ifadelerden hangisi Berkeley'in nesnelere ilişkin görüşleri bağlamında doğru bir  şekilde söylenemez?",
+    "secenekler": [
+      "a) Nesneler, onları algılayan kişi ya da kişilerden bağımlı olarak var olabilirler.",
+      "b) Nesneler, onları algılayan kişi ya da kişilerden bağımsız olarak var olabilirler.",
+      "c) Nesneler,algılanamayan kişi ya da kişilere bağımlıdırlar.",
+      "d) Nesneler, bağımsız olarak var olamazlar",
+      "e) Hiçbiri"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Aşağıdaki ifadelerden hangisi, Berkeley'in zihin anlayışı bağlamında doğru olarak söylenemez?",
+    "secenekler": [
+      "a) Dışımızdaki şeyler ile bu şeylerin zihnimizdeki ideleri arasında hiçbir fark yoktur.",
+      "b) Nesnelerin zihnimiz dışında bağımsız varlıkları yoktur.",
+      "c) Bizim dış dünya ya da şeylerin nitelikleri dediğimiz her şey, tümünü deneyimden türetmiş  olduğumuz idelere ve bu ideler arasındaki bağlantılara geri götürülebilir.",
+      "d) Nesneler, onları algılayan kişi veya kişilerden bağımsız olarak vardırlar.",
+      "e) Hiçbir şey, onu algılayan kimse veya kimselerden ayrı ve bağımsız olarak var değildir"
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Aşağıdakilerden hangisi, Hume'un çağrışım yasaları ismini verdiği ilkeler arasında yer almaz?",
+    "secenekler": [
+      "a) Benzerlk",
+      "b) Zamansal ve mekânsal olarak yakınlık",
+      "c) Bitişiklik",
+      "d) Nedensellk",
+      "e) Yeter sebep ilkesi"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Spinoza'nın bedende ne olup bitiyorsa zihinde bu olup bitenin bir fikri olacağı görüşü ....... ilkesi  olarak bilinir. Yukarıdaki cümlede bulunan boşluğa aşağıdakilerden hangisi gelmelidir?",
+    "secenekler": [
+      "a) Paralelizm",
+      "b) İdealizm",
+      "c) Agnosticism",
+      "d) Cognitivism",
+      "e) Averroism"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Aşağıdaki ifadelerden hangisi, Spinoza'nın yöntem ve doğa anlayışı bağlamında doğru olarak  söylenemez?",
+    "secenekler": [
+      "A) Spinoza, doğada bulunduğunu düşündüğü bu zorunlu neden-sonuç ilişkisi, determnizm  (belirlenmcilik) tir.",
+      "B) Doğa kanunları ve kuralları her yerde ve her zaman aynıdır",
+      "C) Hiçbir yöntem doğaya dair bilgi edinmemizi sağlayamaz.",
+      "D) Spnoza, felsefesini kurarken doğanın düzen olarak gördüğü matematiksel düzen takip  etmiştir",
+      "E) Spinoza,Tanrı ile doğayı özdeşleştrmştir"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Aşağıdakilerden hangisi Descartes'ın yöntem anlayışının temel hedeflerinden birisi olarak  görülemez?",
+    "secenekler": [
+      "a) Geleneksel mantığın eksiklerini gidermek",
+      "b) Doğruluğunu apaçık olarak bilmediğim hiçbir şey doğru olarak kabul etmemek",
+      "c) İnceleyeceğim güçlükler daha iyi çözümlemek için, bölümlere ayırmak",
+      "d) Basit ve anlaşılması en kolay şeylerden başlayarak tıpkı bir merdvenden basamak çıkar gibi  yükseltmek",
+      "e) Eksksz sayımlar ve genel kontroller yapmak"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Aşağıdakilerden hangisi Leibniz'in eserlerinden birisidir?",
+    "secenekler": [
+      "A) Monadoloji",
+      "B) Teolojik-Politik İnceleme",
+      "C) Politik İnceleme",
+      "D) Anlama Yetisinin İyileştirilmesi Üzerine",
+      "E) Ethica"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Genel mantığın diğer adı nedir?",
+    "secenekler": [
+      "A) Sentetik mantık",
+      "B) Formel mantık",
+      "C) Reel mantık",
+      "D) Apriori mantık",
+      "E) Doğal mantık"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Genel mantığın ayırımları nelerdir?",
+    "secenekler": [
+      "a) Saf mantık-uygulamalı mantık",
+      "b) Doğal mantık-reel mantık",
+      "c) Karmaşık mantık- reel mantık",
+      "d) Bilişim mantık- rasyonel mantık",
+      "e) Apriori mantık- doğal mantık"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Tanrı'nın varlığı hakkında kurulan metafizik teoriler nedir?",
+    "secenekler": [
+      "a) Apriori teoloji",
+      "b) Metafizik anlayış",
+      "c) Doğal ilke",
+      "d) Bozulma karmaşası",
+      "e) Rasyonel teoloji"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Kant'a göre ahlakla ilgili olan nedir?",
+    "secenekler": [
+      "a) Teorik akıl",
+      "b) Pratik akıl",
+      "c) Mümkün akıl",
+      "d) Koşulsuz akıl",
+      "e) Koşullu akıl"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Yanılsama mantığı nedir?",
+    "secenekler": [
+      "a) Diyalektik",
+      "b) Metafizik",
+      "c) Analitik",
+      "d) Başkalaşım",
+      "e) Koşul"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Kant'a göre uzay özelliklerinin bilgisini veren nedir?",
+    "secenekler": [
+      "a) Matematik",
+      "b) Koşul",
+      "c) Mantık",
+      "d) Cebir",
+      "e) Geometri"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Aşağıdaki ifadelerden hangisi, Locke'un basit ve karmaşık ideler düşüncesi bağlamında doğru  olarak söylenemez?",
+    "secenekler": [
+      "a) Basit ideler zihne sadece duyumsama ve refleksiyon yoluyla girebilirler.",
+      "b) Zihin basit ideleri tekrarlama, düzenleme, birbirleri ile birleştirme yoluyla karmaşık ideler  üretme yetisine sahiptir.",
+      "c) Basit ideler, zihnimizde doğuştan getirdiğimiz idelerdir.",
+      "d) Zihin basit ideleri almada pasif, karmaşık ideleri üretmede etkindir.",
+      "e) Basit ideler bütün bilgilerimizin temel malzemesidir."
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C \"Kartezyen\" kavramı aşağıdaki filozoflardan hangisinin felsefesine ilişkin olarak dile  getirilmektedir?",
+    "secenekler": [
+      "a) Kant",
+      "b) Spinoza",
+      "c) Descartes",
+      "d) Diderot",
+      "e) Locke"
+    ],
+    "cevap": 2
+  },
+  {
+    "soru": "C Berkeley'e göre, dış dünyanın ve bütün şeylerin onları algılayan kişi ya da kişilerden bağımsız ve  nesnel olarak var olmalarının güvencesi aşağıdakilerden nedir?",
+    "secenekler": [
+      "a) Mantık",
+      "b) Tanrı'nın onları algılıyor oluşu",
+      "c) Metafizik",
+      "d) Doğa yasaları",
+      "e) Kendilerinde belirli niteliklere sahip oluşları"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Aşağıdakilerden hangisi Descartes'ın eserlerinden birisidir?",
+    "secenekler": [
+      "a) Monadoloji",
+      "b) Etika",
+      "c) Saf Aklın Eleştirisi",
+      "d) İnsan Doğası Üzerine Bir İnceleme",
+      "e) Metot Üzerine Konuşma"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Aşağıdakilerden hangisi John Locke'un eserlerinden birisidir?",
+    "secenekler": [
+      "a) İnsanın Anlama Yetisi Üzerine Bir Deneme",
+      "b) Ethica",
+      "c) Anlama Yetisinin İyileştirilmesi Üzerine",
+      "d) Metot Üzerine Konuşma",
+      "e) Bilimler ve Sanatlar Üzerine Söylev"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Spinoza'nın doğadaki her şeyin zorunlu bir neden-sonuç ilişkisi içinde bulunduğu görüşü  aşağıdaki kavramlardan hangisine karşılık gelmektedir?",
+    "secenekler": [
+      "a) Materyalizm",
+      "b) Düalizm",
+      "c) İdealizm",
+      "d) Monizm",
+      "e) Determinizm (Belirlenimcilik)"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "C David Hume, aşağıdaki felsefe akımlarından hangisinin temsilcisidir?",
+    "secenekler": [
+      "a) Rasyonalizm",
+      "b) Empirisizm",
+      "c) Varoluşçuluk",
+      "d) Realizm",
+      "e) Solipsizm"
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Aşağıdakilerden hangisi Hume'un zihin anlayışı bağlamında doğru olarak söylenemez?",
+    "secenekler": [
+      "a) Zihin basit idelerin oluşumunda tamamen pasif durumdadır.",
+      "b) İzlenim ve ideler, basit ve karmaşık olmak üzere ikiye ayrılırlar.",
+      "c) Zihnin aktif yetisi, duyumlar yoluyla edinilen malzemeleri birleştirmek, değiştirmek, genişletmek ya da daraltmaktan ibarettir.",
+      "d) Zihin basit idelerin üretiminde aktif ve kurucu bir role sahiptir.",
+      "e) Zihin karmaşık idelerin türetiminde kurucu bir role sahiptir."
+    ],
+    "cevap": 3
+  },
+  {
+    "soru": "D Aşağıdaki ifadelerden hangisi, Spinoza'nın zihin-beden anlayışı bağlamında doğru olarak  söylenemez?",
+    "secenekler": [
+      "a) Zihin ile beden hiçbir şekilde etkileşimde bulunamazlar.",
+      "b) Bedende ne olup biterse, buna paralel olarak zihinde bu olup bitenin bir fikri oluşur.",
+      "c) Zihin, beden üzerinde kontrole sahip değildir.",
+      "d) Beden, zihin üzerinde kontrole sahip değildir.",
+      "e) Zihin, beden üzerinde mutlak bir kontrole sahiptir."
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Locke, bizde sadece bir şeyin idesini oluşturma gücüne sahip olmayıp, aynı zamanda o şeyin  kendisine de benzeyen niteliklere hangi ismi verir?",
+    "secenekler": [
+      "a) Zorunlu nitelikler",
+      "b) İkincil nitelikler",
+      "c) Yapay nitelikler",
+      "d) Zorunsuz nitelikler",
+      "e) Birincil nitelikler"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Aşağıdaki ifadelerden hangisi Spinoza'nın töz anlayışı bağlamında söylenemez?",
+    "secenekler": [
+      "a) Töz ezeli-ebedidir.",
+      "b) Bir töz, başka tözler tarafından sınırlanır.",
+      "c) Töz tektir.",
+      "d) Töz mutlak anlamda sonsuzdur.",
+      "e) Töz zorunlu olarak vardır."
+    ],
+    "cevap": 1
+  },
+  {
+    "soru": "B Leibniz\"Monadların içlerine herhangi bir şeyin girip çıkabileceği pencereleri yoktur.\" sözüyle  monadların hangi özelliğini vurgulamıştır?",
+    "secenekler": [
+      "a) Monadların dışarıdan gelen hiçbir etkiye maruz kalamayacakları",
+      "b) Monadların birbirleri ile etkileşim içinde olmaları",
+      "c) Monadların gerçek birer varlık olmayışları",
+      "d) Monadların şekil ve büyüklüğe sahip olmamaları",
+      "e) Monadlarının ezeli ve ebedi oluşları"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Leibniz'in yeter sebep ilkesi, aşağıdaki anlayışlardan hangisi ile bağdaşmaktadır?",
+    "secenekler": [
+      "a) Solipsist evren anlayışı",
+      "b) Materyalist doğa anlayışı",
+      "c) Mekanik doğa anlayışı",
+      "d) Determinist doğa anlayışı",
+      "e) Teleolojik doğa anlayışı"
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Aşağıdakilerden hangisi, Locke'un ikincil niteliklerinin özelliklerinden birisi değildir?",
+    "secenekler": [
+      "a) İkincil nitelikler bize nesnelerin asli özelliklerini verirler.",
+      "b) İkincil nitelikler, onları duyumsayan duyu organları olmadan var olamazlar.",
+      "c) İkincil nitelikler, nesnelere değil duyumlarımıza bağlıdır.",
+      "d) İkincil nitelikler, nesnelerin birincil niteliklerinin bizde çeşitli duyumlara neden olmaları anlamında, duyu organlarımızı etkileme güçlerinden başka bir şey değildir.",
+      "e) Bir nesnenin ikincil niteliklerine karşılık gelen ideler, o nesnede mevcut olan bir şeye karşılık  gelmez."
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Aşağıdaki yargılardan hangisi, Descartes'in\"ruh-beden\" (cisim) ayrımı bağlamında söylenebilir?",
+    "secenekler": [
+      "a) Beden, ruh üzerinde mutlak bir hâkimiyete sahiptir.",
+      "b) Ruh ile beden, esasen bir ve aynı tözdür.",
+      "c) Ruh ile beden (cisim), tümüyle aynı yasalara tabidir.",
+      "d) Ruh, beden üzerinde mutlak bir hâkimiyete sahiptir.",
+      "e) Ruh ile beden (cisim), birbirinden tümüyle farklı iki tözdür."
+    ],
+    "cevap": 4
+  },
+  {
+    "soru": "E Leibniz'in monadları ile Antik Çağ atomcularının atomları arasındaki temel fark aşağıdakilerden  hangisidir?",
+    "secenekler": [
+      "A) Monadların maddi değil, tinsel olmaları",
+      "B) Monadların varlığı meydana getiren en temel birimler olmaları",
+      "C) Monadların ezelî ve ebedî olmaları",
+      "D) Monadların yok olamayacakları",
+      "E) Monadların basit ve bölünemez olmaları"
+    ],
+    "cevap": 0
+  },
+  {
+    "soru": "A Estetik yargılarla ilgili bilgiler... Bu bilgilerin ana fikri nedir?",
+    "secenekler": [
+      "a) Yarar gözetmek estetik davranışı bozar.",
+      "b) ..............",
+      "c) .............",
+      "d) .............",
+      "e) ............."
+    ],
+    "cevap": 0
+  }
+];
+
+
+let aktifSoru = 0;
+let puan = 0;
+let kullaniciCevaplar = new Array(sorular.length).fill(null);
+
+function gosterSoru() {
+  const s = sorular[aktifSoru];
+  document.getElementById("soru-metin").innerText = `Soru ${aktifSoru + 1}: ${s.soru}`;
+
+  const seceneklerDiv = document.getElementById("secenekler");
+  seceneklerDiv.innerHTML = "";
+
+  s.secenekler.forEach((secenek, i) => {
+    const btn = document.createElement("button");
+    btn.innerText = secenek;
+    btn.onclick = () => cevapSec(i);
+    seceneklerDiv.appendChild(btn);
+  });
+
+  document.getElementById("soru-sec").value = aktifSoru;
+  document.getElementById("geri-bildirim").innerText = "";
+}
+
+function cevapSec(index) {
+  if (kullaniciCevaplar[aktifSoru] !== null) return;
+
+  kullaniciCevaplar[aktifSoru] = index;
+  const dogruMu = index === sorular[aktifSoru].cevap;
+  const geri = document.getElementById("geri-bildirim");
+  geri.innerText = dogruMu ? "✅ Doğru!" : `❌ Yanlış! Doğru Cevap: ${sorular[aktifSoru].secenekler[sorular[aktifSoru].cevap]}`;
+  if (dogruMu) puan++;
+}
+
+function cevapla() {
+  if (kullaniciCevaplar[aktifSoru] === null) {
+    alert("Lütfen bir cevap seçin.");
+    return;
+  }
+}
+
+function sonrakiSoru() {
+  if (kullaniciCevaplar[aktifSoru] === null) {
+    alert("Lütfen cevabınızı girin.");
+    return;
+  }
+  if (aktifSoru < sorular.length - 1) {
+    aktifSoru++;
+    gosterSoru();
+  } else {
+    sonucuGoster();
+  }
+}
+
+function soruListesiniDoldur() {
+  const sec = document.getElementById("soru-sec");
+  sec.innerHTML = "";
+  for (let i = 0; i < sorular.length; i++) {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.text = `Soru ${i + 1}`;
+    sec.appendChild(opt);
+  }
+  sec.addEventListener("change", (e) => {
+    aktifSoru = parseInt(e.target.value);
+    gosterSoru();
+  });
+}
+
+function testiBitir() {
+  sonucuGoster();
+}
+
+function sonucuGoster() {
+  document.getElementById("test").style.display = "none";
+  document.getElementById("navigasyon").style.display = "none";
+  document.getElementById("sonuc").innerText = `Toplam ${sorular.length} sorudan ${puan} doğru cevap verdiniz.`;
+  document.getElementById("bastan").style.display = "block";
+}
+
+function bastanBasla() {
+  aktifSoru = 0;
+  puan = 0;
+  kullaniciCevaplar = new Array(sorular.length).fill(null);
+  document.getElementById("test").style.display = "block";
+  document.getElementById("navigasyon").style.display = "block";
+  document.getElementById("sonuc").innerText = "";
+  document.getElementById("bastan").style.display = "none";
+  gosterSoru();
+}
+
+soruListesiniDoldur();
+gosterSoru();
+</script>
+
+</body>
+</html>
